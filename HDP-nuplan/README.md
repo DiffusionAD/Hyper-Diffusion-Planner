@@ -6,7 +6,7 @@ In this repo, we provide an implementation of our Hyper Diffusion Planner on NuP
 
 ### Diffusion Loss Space
 
-**(See more details in [Section IV-A] of the paper)**
+**(See more details in [Section 4.1] of the paper)**
 
 We add choices of in diffusion loss space. Specifically, we add diffusion sde transformation in `hdp_nuplan/model/diffusion_utils/sde.py` and choices of supervision in `hdp_nuplan/loss.py`. One can train HDP models with different combination of model prediction and loss function by modifying the `diffusion_model_type` and `diffusion_supervision_type` arguments in `train_predictor.py`. 
 ```
@@ -31,7 +31,7 @@ We currently support `x_start`($\tau_0$), `noise`($\epsilon$) and `velocity`($v_
 
 ### Hybrid Loss
 
-**(See more details in [Section IV-B] of the paper)**
+**(See more details in [Section 4.2] of the paper)**
 
 We use hybrid loss with velocity prediction in `hdp_nuplan/loss.py`: $$\mathcal{L}_{hybrid} = \mathcal{L}_{velocity} + \omega \cdot \mathcal{L}_{waypoints}$$
 where the hybrid loss weight $\omega$ is passed by `planning_hybrid_loss` argument in `train_predictor.py`. The detach integration can be found in `hdp_nuplan/utils/traj_kinematics.py`.

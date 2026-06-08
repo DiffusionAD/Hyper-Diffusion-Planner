@@ -1,0 +1,25 @@
+﻿# Diffusion SDE shared between the base and RL agents.
+#
+# Mounted via
+#     defaults:
+#       - _shared/diffusion_sde@diffusion_sde
+# so the resulting node is consumed by Hydra as a fully-instantiated
+# ``DiffusionSDE`` exactly like the previous inline definition.
+
+_target_: hdp_navsim.agent.dp_vla.model.diffusion_utils.diffusion_sde.DiffusionSDE
+sde:
+  _target_: hdp_navsim.agent.dp_vla.model.diffusion_utils.dpm_solver_pytorch.NoiseScheduleVP
+  schedule: 'linear'
+
+time_sampler:
+  _target_: hdp_navsim.agent.dp_vla.model.diffusion_utils.diffusion_sde.TimeSampler
+  sample_method: uniform
+  eps: 1e-3
+  alpha: 1.0
+  beta: 1.5  # this beta distribution shifts to early steps of denoising
+
+sample_steps: 25
+sample_order: 2
+sample_skip_type: logSNR
+sample_method: 'multistep'
+denoise_to_zero: true

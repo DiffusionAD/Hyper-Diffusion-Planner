@@ -1,0 +1,21 @@
+﻿# DpVlaModel hyper-parameters.
+#
+# Single modification entry: any change to the backbone architecture (hidden
+# size, depth, LoRA rank, ...) must happen here. The Python
+# ``DEFAULT_MODEL_CONFIG`` in ``model/configuration_dp_vla.py`` holds the
+# *fallback* values used when an agent is instantiated outside Hydra (tests,
+# notebooks); the YAML below is the source of truth for training runs and
+# overrides those defaults.
+
+hidden_size: 1024
+depth: 12
+num_heads: 16
+num_actions: 8
+dim_action: 4
+dim_y: 12
+mlp_ratio: 4.0
+cfg_scale: 1.0
+kinematic_type: waypoint
+lora_r: 64
+lora_alpha: 16
+lora_dropout: 0.0

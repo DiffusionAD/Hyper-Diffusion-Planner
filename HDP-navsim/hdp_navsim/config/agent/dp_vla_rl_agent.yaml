@@ -1,0 +1,86 @@
+# Dp-VLA-RL agent (HDP RL fine-tuning).
+#
+# Single modification entries:
+#   - encoder / cache / split paths -> _shared/paths.yaml + env vars
+#   - PDM rollout / target trajectory sampling -> _shared/trajectory_sampling.yaml
+#   - backbone hyper-parameters    -> _shared/model.yaml
+#   - tokenizer max length         -> _shared/language.yaml
+#   - diffusion SDE                -> _shared/diffusion_sde.yaml
+# Anything not listed above is RL-only and stays local to this file.
+
+defaults:
+  # ``paths`` and ``trajectory_sampling`` are referenced via absolute
+  # interpolations (``${paths.xxx}`` / ``${trajectory_sampling.xxx}``) from
+  # inside this agent file. Hydra's ``instantiate(cfg.agent)`` preserves the
+  # parent link of the sub-config, so those interpolations resolve from the
+  # *root* of the full Hydra config -- they must live at ``cfg.paths`` and
+  # ``cfg.trajectory_sampling``, NOT at ``cfg.agent.paths``. The ``@_global_``
+  # keyword promotes them to the absolute root.
+  - _shared/paths@_global_.paths
+  - _shared/trajectory_sampling@_global_.trajectory_sampling
+  - _shared/model@config.model
+  - _shared/language@config.language
+  - _shared/diffusion_sde@diffusion_sde
+  - _self_
+
+_target_: hdp_navsim.agent.dp_vla.dp_vla_rl_agent.DpVlaRlAgent
+_convert_: 'none'
+
+# Dataset split used by the offline scene loader (used for replay-style val
+# plots). Override via Hydra: ``agent.split=trainval``.
+split: test
+
+config:
+  encoder_name: ${paths.encoder_path}
+  split: ${..split}
+
+  # Number of denoising steps used during the on-policy rollout phase.
+  rl_config:
+    replay_buffer_update_epoch: 10
+    group_size: 10
+    diffusion_repeat_size: 1
+    max_rollout_iter: 1
+    rollout_steps: 5
+    bc_data: true
+
+    progress_weight: 30.0
+    ttc_weight: 5.0
+    comfortable_weight: 2.0
+
+    data_list_path: ${paths.data_list_path}
+    cache_path: ${cache_path}
+    metric_cache_path: ${paths.metric_cache_path}
+    proposal_sampling: ${trajectory_sampling.pdm}
+
+  test_metric_cache_path: ${paths.metric_cache_path}
+
+  runtime:
+    ray_reserved_cpus: 4
+
+  # Optional checkpoints (set via Hydra override or env-driven shell).
+  continue_training_ckpt: null
+  pretrain_config:
+    checkpoint_path: null
+    config_path: null
+  test_config:
+    checkpoint_path: null
+    config_path: null
+
+scene_filter:
+  _target_: hdp_navsim.training.training_utils.dataclasses.SceneFilter
+  _convert_: 'none'
+
+  num_history_frames: 4
+  num_future_frames: 10
+  frame_interval: null
+  has_route: true
+  max_scenes: null
+  log_names: null
+  tokens: null
+  log_names_tokens_path: "hdp_navsim/config/train_test_split/scene_filter/navtrain.json"
+
+target_builder:
+  _target_: hdp_navsim.agent.dp_vla.preprocessing.dp_vla_rl_target_builder.DpVlaRlTargetBuilder
+  _convert_: 'all'
+
+  trajectory_sampling: ${trajectory_sampling.target}

@@ -1,0 +1,41 @@
+# Dp-VLA base agent (supervised diffusion MSE).
+#
+# Single modification entries: see the comment block at the top of
+# ``dp_vla_rl_agent.yaml``. Both agents share the exact same defaults, so any
+# change to backbone size or paths automatically propagates.
+
+defaults:
+  # ``paths`` and ``trajectory_sampling`` are referenced via absolute
+  # interpolations (``${paths.xxx}`` / ``${trajectory_sampling.xxx}``) from
+  # inside this agent file. Hydra's ``instantiate(cfg.agent)`` preserves the
+  # parent link of the sub-config, so those interpolations resolve from the
+  # *root* of the full Hydra config -- they must live at ``cfg.paths`` and
+  # ``cfg.trajectory_sampling``, NOT at ``cfg.agent.paths``. The ``@_global_``
+  # keyword promotes them to the absolute root.
+  - _shared/paths@_global_.paths
+  - _shared/trajectory_sampling@_global_.trajectory_sampling
+  - _shared/model@config.model
+  - _shared/language@config.language
+  - _shared/diffusion_sde@diffusion_sde
+  - _self_
+
+_target_: hdp_navsim.agent.dp_vla.dp_vla_agent.DpVlaAgent
+_convert_: 'all'
+
+config:
+  encoder_name: ${paths.encoder_path}
+  # Loss parameterisation. Null preserves the model_type parameterisation.
+  supervision_type: null
+  test_config:
+    checkpoint_path: null
+    config_path: null
+
+feature_builder:
+  _target_: hdp_navsim.agent.dp_vla.preprocessing.dp_vla_feature_builder.DpVlaFeatureBuilder
+  _convert_: 'all'
+
+target_builder:
+  _target_: hdp_navsim.agent.dp_vla.preprocessing.dp_vla_target_builder.DpVlaTargetBuilder
+  _convert_: 'all'
+
+  trajectory_sampling: ${trajectory_sampling.target}

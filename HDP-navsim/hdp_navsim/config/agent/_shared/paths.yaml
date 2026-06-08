@@ -1,0 +1,29 @@
+# Shared paths used by every Dp-VLA agent variant.
+#
+# Single modification entry:
+#   * Edit `env.sh` at the repo root (or `hdp_navsim/paths.py`) to point at
+#     a new machine; **do not** hard-code absolute paths in this file.
+#   * Each value below is just a thin wrapper over an env var with a sensible
+#     default (kept consistent with `env.sh` / `hdp_navsim/paths.py`).
+#
+# Imported by `dp_vla_agent.yaml` / `dp_vla_rl_agent.yaml` via
+#     defaults:
+#       - _shared/paths@_global_.paths
+# so external references become absolute `${paths.encoder_path}` etc. The
+# `@_global_` mount is required because Hydra's ``instantiate(cfg.agent)``
+# resolves interpolations against the *root* of the full Hydra config, so
+# ``paths`` must live at ``cfg.paths`` rather than ``cfg.agent.paths``.
+
+# Florence-2 (or any HF AutoModelForCausalLM) used as the VLM encoder.
+encoder_path: ${oc.env:DP_VLA_ENCODER_PATH,microsoft/Florence-2-large}
+
+# Code / experiment roots.
+project_root: ${oc.env:HDP_NAVSIM_ROOT,.}
+navsim_exp_root: ${oc.env:NAVSIM_EXP_ROOT,${.project_root}/navsim-exp}
+
+# Per-token caches (override individually if you keep them on different disks).
+cache_path: ${oc.env:HDP_NAVSIM_CACHE_PATH,${.navsim_exp_root}/training_cache} # TODO: same problem as in default_training.yaml
+metric_cache_path: ${oc.env:NAVSIM_METRIC_CACHE_PATH,${.navsim_exp_root}/metric_cache}
+
+# Default scene-token list shipped with the repo.
+data_list_path: ${.project_root}/hdp_navsim/training/training_utils/trainval.json

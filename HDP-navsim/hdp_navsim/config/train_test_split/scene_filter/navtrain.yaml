@@ -1,0 +1,10 @@
+﻿_target_: hdp_navsim.training.training_utils.dataclasses.SceneFilter      
+_convert_: 'all'
+num_history_frames: 4
+num_future_frames: 10
+frame_interval: 1
+has_route: true
+max_scenes: null
+log_names: null
+tokens: null
+log_names_tokens_path: "hdp_navsim/config/train_test_split/scene_filter/navtrain.json"

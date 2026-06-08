@@ -1,0 +1,4 @@
+defaults:
+  - scene_filter: smoke_test
+
+data_split: trainval

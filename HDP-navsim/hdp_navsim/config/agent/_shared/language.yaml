@@ -1,0 +1,6 @@
+# Language preprocessor settings.
+#
+# Single modification entry: tokenizer max length used by both the base and
+# RL agents. The encoder name is shared from ``paths.encoder_path``.
+
+max_length: 40
